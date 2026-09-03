@@ -1,64 +1,65 @@
-<!DOCTYPE html>
-<html lang="en">
-
+<!doctype html>
+<html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2023년 버킷리스트</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Hahmlet:wght@400;500;600;700&display=swap');
-        * {
-            font-family: 'Hahmlet', serif;
-        }
-        .title {
-            color: white;
-            background-color: tomato;
-            font-size: 24px;
-            padding: 4px 14px;
-            border-radius: 8px;
-        }
-
-        .bg {
-            width: 360px;
-            background-image: url("https://s3.ap-northeast-2.amazonaws.com/materials.spartacodingclub.kr/bucketList/bg-grid.png");
-        }
-
-        .msg {
-            font-weight: bold;
-        }
-
-        .bucket {
-            width: 160px;
-            height: 160px;
-        }
-
-        .img1 {
-            background-image: url("https://s3.ap-northeast-2.amazonaws.com/materials.spartacodingclub.kr/bucketList/bucket-red.png");
-            background-size: cover;
-            background-position: center;
-        }
-
-        .img2 {
-            background-image: url("https://s3.ap-northeast-2.amazonaws.com/materials.spartacodingclub.kr/bucketList/bucket-lightred.png");
-            background-size: cover;
-            background-position: center;
-        }
-    </style>
-    <link rel="stylesheet" type="text/css" href="https://s3.ap-northeast-2.amazonaws.com/materials.spartacodingclub.kr/bucketList/sparta-bucket2.css">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>약속 날짜 조사</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f6fa;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#222}
+header{background:white;border-bottom:1px solid #eee;position:sticky;top:0;z-index:2}.top{max-width:980px;margin:auto;padding:18px 16px;display:flex;justify-content:space-between;align-items:center}.title{font-size:22px;font-weight:800}
+.wrap{max-width:980px;margin:auto;padding:18px 12px 40px}.info{background:white;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 10px #00000008}
+.name{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:16px;margin-top:7px}
+.month{background:white;border-radius:16px;padding:14px;margin-bottom:14px;box-shadow:0 2px 10px #00000008}
+.month h2{font-size:18px;margin:3px 2px 12px}.week,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.week div{text-align:center;font-size:12px;color:#777;padding:4px}.days .empty{min-height:72px}
+.day{min-height:72px;border:1px solid #e4e6ec;border-radius:9px;background:#fff;padding:7px;cursor:pointer;position:relative}
+.day:hover{background:#fafcff}.day.selected{background:#eaf3ff;border:2px solid #4285f4;padding:6px}
+.day .num{font-weight:700}.day small{display:block;color:#888;margin-top:4px;font-size:10px}.sun .num{color:#d84b4b}.sat .num{color:#3d70c9}
+.day.selected:after{content:"✓";position:absolute;right:7px;top:6px;color:#4285f4;font-weight:800}
+.bottom{position:sticky;bottom:10px;background:white;border-radius:14px;padding:10px;box-shadow:0 2px 15px #0002}
+button{width:100%;border:0;border-radius:11px;background:#4285f4;color:#fff;padding:14px;font-size:16px;font-weight:800;cursor:pointer}
+.msg{margin-top:8px;text-align:center;font-size:13px;color:#555}
+@media(max-width:600px){.top{padding:15px 12px}.title{font-size:19px}.day{min-height:61px;padding:5px}.day.selected{padding:4px}.days{gap:3px}.week,.days{font-size:12px}.month{padding:10px}}
+</style>
 </head>
-
-<body class="bg center">
-    <h1 class="title">2023 신년계획</h1>
-    <p class="msg">올해는 꼭 모두 지키자!</p>
-    <div class="row flex-row wrap">
-        <div class="bucket img1 center">오픽 AL</div>
-        <div class="bucket img2 center">5kg 감량</div>
-        <div class="bucket img2 center">해외 3번 이상</div>
-        <div class="bucket img1 center">패러글라이딩</div>
-        <div class="bucket img1 center done"></div>
-        <div class="bucket img2 center"></div>
-    </div>
-</body>
-
-</html>
+<body>
+<header><div class="top"><div class="title">📅 약속 날짜 조사</div><div id="count">0일 선택</div></div></header>
+<main class="wrap">
+<section class="info"><b>이름</b><input id="name" class="name" placeholder="이름을 입력하세요"><p style="margin:10px 0 0;color:#777;font-size:13px">가능한 날짜를 클릭해서 선택해 주세요. 여러 날짜를 선택할 수 있습니다.</p></section>
+<div id="calendar"></div>
+<section class="bottom"><button onclick="submitForm()">선택 완료</button><div id="msg" class="msg"></div></section>
+</main>
+<script>
+const months=[[2026,10],[2026,11],[2026,12],[2027,1],[2027,2]];
+const selected=new Set();
+const dow=['일','월','화','수','목','금','토'];
+const pad=n=>String(n).padStart(2,'0');
+const key=(y,m,d)=>`${y}-${pad(m)}-${pad(d)}`;
+function render(){
+ const root=document.getElementById('calendar');
+ months.forEach(([y,m])=>{
+  const sec=document.createElement('section');sec.className='month';
+  sec.innerHTML=`<h2>${y}년 ${m}월</h2><div class="week">${dow.map(x=>`<div>${x}</div>`).join('')}</div><div class="days"></div>`;
+  const grid=sec.querySelector('.days'), first=new Date(y,m-1,1).getDay(), last=new Date(y,m,0).getDate();
+  for(let i=0;i<first;i++){const e=document.createElement('div');e.className='empty';grid.appendChild(e)}
+  for(let d=1;d<=last;d++){
+   const dt=new Date(y,m-1,d), k=key(y,m,d), el=document.createElement('div');
+   el.className='day '+(dt.getDay()==0?'sun ':'')+(dt.getDay()==6?'sat':'');
+   el.innerHTML=`<span class="num">${d}</span><small>${dow[dt.getDay()]}</small>`;
+   el.onclick=()=>{selected.has(k)?selected.delete(k):selected.add(k);el.classList.toggle('selected',selected.has(k));document.getElementById('count').textContent=selected.size+'일 선택'};
+   grid.appendChild(el);
+  }
+  root.appendChild(sec);
+ });
+}
+function submitForm(){
+ const name=document.getElementById('name').value.trim(), msg=document.getElementById('msg');
+ if(!name){msg.textContent='이름을 입력해 주세요.';return}
+ if(!selected.size){msg.textContent='가능한 날짜를 하나 이상 선택해 주세요.';return}
+ const dates=[...selected].sort();
+ const data={name,dates};
+ localStorage.setItem('availability_'+name,JSON.stringify(data));
+ msg.textContent=`${name}님, ${dates.length}개의 날짜가 저장되었습니다. (이 기기에서 확인 가능)`;
+}
+render();
+</script>
+</body></html>
